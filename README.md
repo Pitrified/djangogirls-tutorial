@@ -116,3 +116,53 @@ Login in the admin page: (http://127.0.0.1:8000/admin/) and create a few posts.
 ### Deploy!
 
 More info [here](https://tutorial.djangogirls.org/en/deploy/)
+
+On [Python Anywhere](https://www.pythonanywhere.com/) there is a magic script
+
+```bash
+pip3.6 install --user pythonanywhere
+pa_autoconfigure_django.py --python=3.6 https://github.com/<your-github-username>/my-first-blog.git
+```
+
+Remember that the database is a different one, so a new superuser has to be created.
+
+### Deploy!
+
+More info [here](https://tutorial.djangogirls.org/en/django_urls/)
+
+Urls are set up in `mysite/urls.py`
+
+The admin URL is already setup. For every URL that starts with `admin/`, Django will wind a corresponding view.
+
+```python
+path("admin/", admin.site.urls),
+```
+
+Link the blog urls to the root of the site, saved in `blog/urls.py`
+
+```python
+path("", include("blog.urls")),
+```
+
+Import the views from the blog app, and link `view.post_list` to the root URL, with the name `/post_list`
+
+```python
+from . import views
+path("", views.post_list, name="post_list"),
+```
+
+### Django views
+
+More info [here](https://tutorial.djangogirls.org/en/django_views/)
+
+The view holds the logic of the application.
+It will request information from the model and pass it to a template.
+
+Inside `blog/views.py` define the `post_list` view defined above to the template in `blog/templates/blog/post_list.py`
+
+```python
+def post_list(request):
+    return render(request, "blog/post_list.html", {})
+```
+
+
