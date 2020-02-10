@@ -221,8 +221,8 @@ Notice that `'posts'` is the key of the dict, and will be used in the template.
 
 ```python
 def post_list(request):
-    show_posts = Post.objects.filter(published_date__lte=timezone.now()).order_by("published_date")
-    return render(request, "blog/post_list.html", {"posts": show_posts})
+    the_post_list = Post.objects.filter(published_date__lte=timezone.now()).order_by("published_date")
+    return render(request, "blog/post_list.html", {"posts": the_post_list})
 ```
 
 ### Use the data in the template
@@ -245,11 +245,72 @@ In the template file `blog/templates/blog/post_list.html`
 {% endfor %}
 ```
 
+The text is piped into `|linebreaksbr` to convert line breaks into paragraphs.
 
+### Load static files
 
+More info [here](https://tutorial.djangogirls.org/en/css/)
 
+Put the CSS in `blog/static/css/blog.css`, and load that by putting in the first line
 
+```html
+{% load static %}
+```
 
+And use the style with
 
+```html
+<link rel="stylesheet" href="{% static 'css/blog.css' %}">
+```
 
+### Template extending
 
+More info [here](https://tutorial.djangogirls.org/en/template_extending/)
+
+To avoid replicating boilerplate code, create `blog/templates/blog/base.html` to hold the general page structure, and extend this template to create the post list.
+
+Notice that content is the name of the block
+
+```html
+{% block content %}
+{% endblock %}
+```
+
+And extend the template with
+
+```html
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    {% for post in posts %}
+        <h2><a href="">{{ post.title }}</a></h2>
+    {% endfor %}
+{% endblock %}
+
+```
+
+### Parse URLs
+
+More info [here](https://tutorial.djangogirls.org/en/extend_your_application/)
+
+Add a link to the post details, using the primary key of the blog post.
+
+```html
+<h2><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h2>
+```
+
+Notice that `post_detail` is the name of the URL Django expects, so it needs to be defined in `blog/urls.py`.
+
+```python
+path("post/<int:pk>/", views.post_detail, name="post_detail"),
+```
+
+The URL pattern `"post/<int:pk>/"` means that the URL will start with `post/` followed by an integer, that will be transfered to a view called `post_detail` as the variable `pk`
+
+Inside `blog/views.py` the view has to be created, and will extract info for the requested post. If it does not exist in the database a `DoesNotExist` error will be raised. To fail more gracefully, use `get_object_or_404` to get a 404 page instead.
+
+```python
+def post_detail(request, pk):
+    the_post = get_object_or_404(Post, pk=pk)
+    return render(request, "blog/post_detail.html", {"post": the_post})
+```
