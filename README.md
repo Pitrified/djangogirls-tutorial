@@ -307,10 +307,22 @@ path("post/<int:pk>/", views.post_detail, name="post_detail"),
 
 The URL pattern `"post/<int:pk>/"` means that the URL will start with `post/` followed by an integer, that will be transfered to a view called `post_detail` as the variable `pk`
 
+So the URL will be expanded in the actual html file served as
+
+```html
+<h2><a href="/post/1/">First post</a></h2>
+```
+
 Inside `blog/views.py` the view has to be created, and will extract info for the requested post. If it does not exist in the database a `DoesNotExist` error will be raised. To fail more gracefully, use `get_object_or_404` to get a 404 page instead.
 
 ```python
 def post_detail(request, pk):
     the_post = get_object_or_404(Post, pk=pk)
     return render(request, "blog/post_detail.html", {"post": the_post})
+```
+
+Reload the static files on the server with
+
+```bash
+python manage.py collectstatic
 ```
