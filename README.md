@@ -23,13 +23,14 @@ LANGUAGE_CODE = 'de-ch'
 Setup the root for the static files
 
 ```python
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 ```
 
 Add the hosting site
 
 ```python
-ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com']
+ALLOWED_HOSTS = ["127.0.0.1", ".pythonanywhere.com", ".netlify.com"]
 ```
 
 Create the default database
@@ -54,16 +55,16 @@ Create the blog application inside the project, where `blog` is the app name
 python manage.py startapp blog
 ```
 
-In `mysite/settings.py`, add the app 
+In `mysite/settings.py`, add the app. Note that `BlogConfig` is a method inside `blog/apps.py`.
 
 ```python
 INSTALLED_APPS = [
     ...
-    'blog.apps.BlogConfig',
+    "blog.apps.BlogConfig",
 ]
 ```
 
-In `blog/models.py`, create the model for a blog post
+In `blog/models.py`, create the model for a blog post, where `Post` is the model name
 
 ```python
 from django.conf import settings
@@ -71,7 +72,7 @@ from django.db import models
 from django.utils import timezone
 
 
-class BlogPost(models.Model):
+class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     text = models.TextField()
@@ -86,3 +87,32 @@ class BlogPost(models.Model):
         return self.title
 ```
 
+Add the model to the database
+```bash
+python manage.py makemigrations blog
+python manage.py migrate blog
+```
+
+### Django admin
+
+More info [here](https://tutorial.djangogirls.org/en/django_admin/)
+
+Register the model on the admin site, in `blog/admin.py`
+
+```python
+from django.contrib import admin
+from .models import Post
+
+admin.site.register(Post)
+```
+
+Create a superuser
+```bash
+python manage.py createsuperuser
+```
+
+Login in the admin page: (http://127.0.0.1:8000/admin/) and create a few posts.
+
+### Deploy!
+
+More info [here](https://tutorial.djangogirls.org/en/deploy/)
