@@ -126,7 +126,7 @@ pa_autoconfigure_django.py --python=3.6 https://github.com/<your-github-username
 
 Remember that the database is a different one, so a new superuser has to be created.
 
-### Deploy!
+### Django urls
 
 More info [here](https://tutorial.djangogirls.org/en/django_urls/)
 
@@ -164,5 +164,92 @@ Inside `blog/views.py` define the `post_list` view defined above to the template
 def post_list(request):
     return render(request, "blog/post_list.html", {})
 ```
+
+### Django QuerySets
+
+More info [here](https://tutorial.djangogirls.org/en/django_orm/)
+
+Open the Django interactive console with
+
+```bash
+python manage.py shell
+```
+
+And use it to inspect the data in your database
+
+```python
+# import the models
+from blog.models import Post
+from django.contrib.auth.models import User
+
+# list all the posts and users
+Post.objects.all()
+User.objects.all()
+
+# get the user
+me = User.objects.get(username="pitrified")
+# create a post
+Post.objects.create(author=me, title="Sample title", text="Test")
+
+# filter the results
+Post.objects.filter(author=me)
+# notice __operator syntax
+Post.objects.filter(title__contains="title")
+
+# easy timezones
+from django.utils import timezone
+Post.objects.filter(published_date__lte=timezone.now())
+
+# publish the post to see it if you filter by date
+post = Post.objects.get(title="Sample title")
+post.publish()
+
+# order the results
+Post.objects.order_by("created_date")
+Post.objects.order_by("-created_date")
+
+# chain queries
+Post.objects.filter(published_date__lte=timezone.now()).order_by("published_date")
+```
+
+### Dynamic data in templates
+
+More info [here](https://tutorial.djangogirls.org/en/dynamic_data_in_templates/)
+
+Inside `blog/views.py` the actual posts have to be extracted and sent to the template.
+Notice that `'posts'` is the key of the dict, and will be used in the template.
+
+```python
+def post_list(request):
+    show_posts = Post.objects.filter(published_date__lte=timezone.now()).order_by("published_date")
+    return render(request, "blog/post_list.html", {"posts": show_posts})
+```
+
+### Use the data in the template
+
+More info [here](https://tutorial.djangogirls.org/en/django_templates/)
+
+In the template file `blog/templates/blog/post_list.html`
+
+```html
+<div>
+    <h1><a href="/">Django Girls Blog</a></h1>
+</div>
+
+{% for post in posts %}
+    <div>
+        <p>published: {{ post.published_date }}</p>
+        <h2><a href="">{{ post.title }}</a></h2>
+        <p>{{ post.text|linebreaksbr }}</p>
+    </div>
+{% endfor %}
+```
+
+
+
+
+
+
+
 
 
