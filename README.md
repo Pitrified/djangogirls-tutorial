@@ -326,3 +326,91 @@ Reload the static files on the server with
 ```bash
 python manage.py collectstatic
 ```
+
+### Django forms
+
+More info [here](https://tutorial.djangogirls.org/en/django_forms/)
+
+Create the form model in `blog/forms.py`
+
+```python
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = (
+            "title",
+            "text",
+        )
+```
+
+Add a link in `blog/templates/blog/base.html` to the new post page
+
+```html
+<a href="{% url 'post_new' %}">New post</a>
+```
+
+And define the corresponding URL in `blog/urls.py`
+
+```python
+path("post/new/", views.post_new, name="post_new"),
+```
+
+Create the associated view in `blog/views.py`
+
+```python
+def post_new(request):
+    the_form = PostForm()
+    return render(request, "blog/post_edit.html", {"form": the_form})
+```
+
+And the template in `blot/templates/blog/post_edit.html`
+
+```html
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <h2>New post</h2>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}
+```
+
+The `{{ form.as_p }}` template displays the form, that needs to be wrapped inside a `<form>` tag. The save button will `submit` the data, and the `{% csrf_token %}` is Django magic to secure the form.
+
+
+The view in `blog/views.py` does nothing after the button is clicked. The page gets reloaded, but as the `<form>` tag had `method=POST`, now the request passed to the view has method `POST` and the form in `request.POST`.
+
+```python
+def post_new(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save()
+            return redirect("post_detail", pk=post.pk)
+    else:
+        form = PostForm()
+    return render(request, "blog/post_edit.html", {"form": form})
+```
+
+The form is saved but not committed yet, an author (the one logged in) is added, the date is set and the post is saved.
+Django provides the `redirect` function that lets you invoke a specific view.
+
+When a form is created, an instance can be passed to the constructor, both with a post just saved (`request.POST`) and a post just opened for edit.
+
+```python
+form = PostForm(request.POST, instance=post)
+form = PostForm(instance=post)
+```
+
+One of the `user` attribute is `is_authenticated`, that can be used to show the edit/new post buttons only to logged in users.
+
+```html
+{% if user.is_authenticated %}
+    <a href="{% url 'post_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+{% endif %}
+```
