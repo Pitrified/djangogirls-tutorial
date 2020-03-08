@@ -30,7 +30,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 Add the hosting site
 
 ```python
-ALLOWED_HOSTS = ["127.0.0.1", ".pythonanywhere.com", ".netlify.com"]
+ALLOWED_HOSTS = ["127.0.0.1", ".pythonanywhere.com"]
 ```
 
 Create the default database
@@ -413,4 +413,47 @@ One of the `user` attribute is `is_authenticated`, that can be used to show the 
 {% if user.is_authenticated %}
     <a href="{% url 'post_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
 {% endif %}
+```
+
+### User login
+
+More info [here](https://tutorial-extensions.djangogirls.org/en/authentication_authorization/)
+
+Use the decorator `login_required` to make a view visible only to logged-in users.
+If the user is not logged yet, they will be redirected to the login page.
+
+```python
+@login_required
+def post_new(request):
+    ...
+```
+
+In `mysite/urls.py` add the url for the path `accounts/login/`
+
+```python
+from django.contrib.auth import views
+urlpatterns = [
+    ...
+    path('accounts/login/', views.LoginView.as_view(), name='login'),
+]
+```
+
+and create the template for the login page `blog/templates/registration/login.html`.
+
+In `mysite/settings.py` add `LOGIN_REDIRECT_URL = '/'` to redirect a successful login to the top-level index (the homepage).
+
+To logout, add a button 
+
+```html
+<p class="top-menu">Hello {{ user.username }} <small>(<a href="{% url 'logout' %}">Log out</a>)</small></p>
+```
+
+and create the corresponding urlpath
+
+```python
+from django.contrib.auth import views
+urlpatterns = [
+    ...
+    path('accounts/logout/', views.LogoutView.as_view(next_page='/'), name='logout'),
+]
 ```
